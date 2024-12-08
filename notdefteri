@@ -1,0 +1,93 @@
+# İki sınıf içermektedir. Not ve NotDefteri.
+
+
+from datetime import datetime
+
+# Not sınıfı
+class Not:
+    def __init__(self, icerik, tarih=None):
+        self.icerik = icerik
+        self.tarih = tarih if tarih else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    def __str__(self):
+        return f"{self.tarih} - {self.icerik}"
+
+
+# Not Defteri sınıfı
+class NotDefteri:
+    def __init__(self, file_name="notlar.txt"):
+        self.notlar = []
+        self.file_name = file_name
+        self.load_notes()
+
+    def not_ekle(self, icerik):
+        yeni_not = Not(icerik)
+        self.notlar.append(yeni_not)
+        self.save_notes()
+        print("Not eklendi.")
+
+    def notlari_listele(self):
+        if not self.notlar:
+            print("Not defteri boş.")
+            return
+
+        print("\n--- Notlar ---")
+        for i, not_ in enumerate(sorted(self.notlar, key=lambda x: x.tarih)):
+            print(f"{i}. {not_}")
+        print("----------------")
+
+    def not_sil(self, not_index):
+        if 0 <= not_index < len(self.notlar):
+            silinen = self.notlar.pop(not_index)
+            self.save_notes()
+            print(f"Not silindi: {silinen}")
+        else:
+            print("Geçersiz not numarası.")
+
+    def save_notes(self):
+        with open(self.file_name, "w") as file:
+            for not_ in self.notlar:
+                file.write(f"{not_.tarih}|{not_.icerik}\n")
+
+    def load_notes(self):
+        try:
+            with open(self.file_name, "r") as file:
+                for line in file:
+                    tarih, icerik = line.strip().split("|", 1)
+                    self.notlar.append(Not(icerik, tarih))
+        except FileNotFoundError:
+            pass
+
+
+# Ana program döngüsü
+def main():
+    not_defteri = NotDefteri()
+
+    while True:
+        print("\n--- Not Defteri ---")
+        print("1. Not Ekle")
+        print("2. Notları Listele")
+        print("3. Not Sil")
+        print("4. Çıkış")
+        secim = input("Seçiminizi yapın: ")
+
+        if secim == "1":
+            icerik = input("Not içeriği: ")
+            not_defteri.not_ekle(icerik)
+        elif secim == "2":
+            not_defteri.notlari_listele()
+        elif secim == "3":
+            not_defteri.notlari_listele()
+            try:
+                not_index = int(input("Silmek istediğiniz not numarası: "))
+                not_defteri.not_sil(not_index)
+            except ValueError:
+                print("Geçersiz giriş, lütfen bir sayı girin.")
+        elif secim == "4":
+            print("Çıkılıyor...")
+            break
+        else:
+            print("Geçersiz seçim. Tekrar deneyin.")
+
+if __name__ == "__main__":
+    main()
